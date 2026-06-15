@@ -15,27 +15,23 @@ function showForm() {
             <input type="text" id="noteTitle" placeholder="Название заметки" class="input">
             <textarea id="noteContent" placeholder="Содержимое" class="textarea" rows="4"></textarea>
             <div class="form-buttons">
-                <button class="btn btn-primary" id="saveBtn">Сохранить</button>
-                <button class="btn btn-secondary" id="cancelBtn">Отмена</button>
+                <button class="btn btn-primary" onclick="saveNote()">Сохранить</button>
+                <button class="btn btn-secondary" onclick="loadNotes()">Отмена</button>
             </div>
         </div>
     `;
+}
 
-    document.getElementById('saveBtn').addEventListener('click', () => {
-        const title = document.getElementById('noteTitle').value.trim();
-        const content = document.getElementById('noteContent').value.trim();
-        if (title) {
-            tg.sendData(JSON.stringify({
-                action: "create_note",
-                title: title,
-                content: content
-            }));
-        }
-    });
-
-    document.getElementById('cancelBtn').addEventListener('click', () => {
-        loadNotes();
-    });
+function saveNote() {
+    const title = document.getElementById('noteTitle').value.trim();
+    const content = document.getElementById('noteContent').value.trim();
+    if (title) {
+        tg.sendData(JSON.stringify({
+            action: "create_note",
+            title: title,
+            content: content
+        }));
+    }
 }
 
 function deleteNote(id) {
