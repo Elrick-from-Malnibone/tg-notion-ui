@@ -4,36 +4,40 @@ tg.expand();
 
 let currentTab = 'notes';
 
-// Загрузка заметок
-async function loadNotes() {
+function loadNotes() {
     tg.sendData(JSON.stringify({ action: "get_notes" }));
 }
 
-// Создание заметки
-function createNote() {
-    tg.showPopup({
-        title: 'Новая заметка',
-        message: 'Введите название',
-        buttons: [
-            { type: 'default', text: 'Создать' },
-            { type: 'cancel' }
-        ]
-    }, (btn) => {
-        if (btn === 'default') {
-            const title = prompt('Название:');
-            const content = prompt('Содержимое:');
-            if (title) {
-                tg.sendData(JSON.stringify({
-                    action: "create_note",
-                    title: title,
-                    content: content || ''
-                }));
-            }
+function showForm() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+        <div class="form">
+            <input type="text" id="noteTitle" placeholder="Название заметки" class="input">
+            <textarea id="noteContent" placeholder="Содержимое" class="textarea" rows="4"></textarea>
+            <div class="form-buttons">
+                <button class="btn btn-primary" id="saveBtn">Сохранить</button>
+                <button class="btn btn-secondary" id="cancelBtn">Отмена</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('saveBtn').addEventListener('click', () => {
+        const title = document.getElementById('noteTitle').value.trim();
+        const content = document.getElementById('noteContent').value.trim();
+        if (title) {
+            tg.sendData(JSON.stringify({
+                action: "create_note",
+                title: title,
+                content: content
+            }));
         }
+    });
+
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+        loadNotes();
     });
 }
 
-// Удаление заметки
 function deleteNote(id) {
     tg.showConfirm('Удалить заметку?', (ok) => {
         if (ok) {
@@ -45,7 +49,6 @@ function deleteNote(id) {
     });
 }
 
-// Вкладки
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -59,12 +62,10 @@ document.querySelectorAll('.tab').forEach(tab => {
     });
 });
 
-// Кнопка добавления
 document.getElementById('addBtn').addEventListener('click', () => {
     if (currentTab === 'notes') {
-        createNote();
+        showForm();
     }
 });
 
-// Первая загрузка
 loadNotes();
