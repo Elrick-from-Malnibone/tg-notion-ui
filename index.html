@@ -1,10 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TG Notion</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>TG Notion работает</h1>
+    <div class="app">
+        <div class="tabs">
+            <button class="tab active" data-tab="notes">📝 Заметки</button>
+            <button class="tab" data-tab="tasks">✅ Задачи</button>
+        </div>
+        <div class="content" id="content">
+            <!-- Список заметок/задач -->
+        </div>
+        <button class="add-btn" id="addBtn">+</button>
+    </div>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
