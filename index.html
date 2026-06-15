@@ -5,6 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TG Notion</title>
     <link rel="stylesheet" href="style.css">
+    <script>
+        window.addEventListener('message', (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.notes) {
+                    let html = '';
+                    data.notes.forEach(note => {
+                        html += `<div class="note-card">
+                            <h3>${note.title}</h3>
+                            <p>${note.content || ''}</p>
+                            <span class="note-date">${note.created_at}</span>
+                        </div>`;
+                    });
+                    document.getElementById('content').innerHTML = html || '<p style="color: var(--text-secondary); padding: 20px;">Нет заметок</p>';
+                }
+                if (data.ok) {
+                    tg.showAlert('Готово!');
+                    loadNotes();
+                }
+            } catch(e) {}
+        });
+    </script>
 </head>
 <body>
     <div class="app">
@@ -12,9 +34,7 @@
             <button class="tab active" data-tab="notes">📝 Заметки</button>
             <button class="tab" data-tab="tasks">✅ Задачи</button>
         </div>
-        <div class="content" id="content">
-            <!-- Список заметок/задач -->
-        </div>
+        <div class="content" id="content"></div>
         <button class="add-btn" id="addBtn">+</button>
     </div>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
