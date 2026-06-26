@@ -64,25 +64,48 @@ function renderNotes() {
     let html = '';
     notes.forEach((note, index) => {
         html += `
-            <div class="note-card">
-                <div class="note-header">
-                    <h3>${escapeHtml(note.title)}</h3>
-                    <button class="del-btn" data-index="${index}" data-type="note">✕</button>
-                </div>
-                ${note.content ? `<p>${escapeHtml(note.content)}</p>` : ''}
-                <span class="note-date">${note.created_at}</span>
+            <div class="note-item" data-index="${index}">
+                <span class="note-title">${escapeHtml(note.title)}</span>
+                <span class="note-date">${note.created_at.slice(0, 5)}</span>
             </div>
         `;
     });
     content.innerHTML = html;
 
-    document.querySelectorAll('.del-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const index = btn.dataset.index;
-            const type = btn.dataset.type;
-            if (type === 'note') deleteNote(index);
-            else deleteTask(index);
+    document.querySelectorAll('.note-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const index = parseInt(item.dataset.index);
+            openNote(index);
+        });
+    });
+}
+
+function openNote(index) {
+    const notes = getNotes();
+    const note = notes[index];
+    const content = document.getElementById('content');
+
+    content.innerHTML = `
+        <div class="note-full">
+            <div class="note-full-header">
+                <button class="back-btn" id="backBtn">← Назад</button>
+                <button class="del-btn" id="delNoteBtn">✕</button>
+            </div>
+            <h2>${escapeHtml(note.title)}</h2>
+            <div class="note-full-content">${escapeHtml(note.content || '') || '<em style="color:var(--text-secondary)">Пусто</em>'}</div>
+            <span class="note-date">${note.created_at}</span>
+        </div>
+    `;
+
+    document.getElementById('backBtn').addEventListener('click', renderNotes);
+    document.getElementById('delNoteBtn').addEventListener('click', () => {
+        tg.showConfirm('Удалить заметку?', (ok) => {
+            if (ok) {
+                const notes = getNotes();
+                notes.splice(index, 1);
+                saveNotes(notes);
+                renderNotes();
+            }
         });
     });
 }
