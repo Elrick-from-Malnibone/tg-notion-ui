@@ -27,21 +27,34 @@ function renderNotes() {
     const content = document.getElementById('content');
     
     if (notes.length === 0) {
-        content.innerHTML = '<p style="color: var(--text-secondary); padding: 20px;">Нет заметок</p>';
+        content.innerHTML = '<div class="empty">📝<br>Нет заметок</div>';
         return;
     }
 
     let html = '';
     notes.forEach((note, index) => {
         html += `
-            <div class="note-card" onclick="deleteNote(${index})">
-                <h3>${escapeHtml(note.title)}</h3>
-                <p>${escapeHtml(note.content || '')}</p>
+            <div class="note-card">
+                <div class="note-header">
+                    <h3>${escapeHtml(note.title)}</h3>
+                    <button class="del-btn" data-index="${index}" data-type="note">✕</button>
+                </div>
+                ${note.content ? `<p>${escapeHtml(note.content)}</p>` : ''}
                 <span class="note-date">${note.created_at}</span>
             </div>
         `;
     });
     content.innerHTML = html;
+
+    document.querySelectorAll('.del-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = btn.dataset.index;
+            const type = btn.dataset.type;
+            if (type === 'note') deleteNote(index);
+            else deleteTask(index);
+        });
+    });
 }
 
 function renderTasks() {
@@ -49,21 +62,59 @@ function renderTasks() {
     const content = document.getElementById('content');
     
     if (tasks.length === 0) {
-        content.innerHTML = '<p style="color: var(--text-secondary); padding: 20px;">Нет задач</p>';
+        content.innerHTML = '<div class="empty">✅<br>Нет задач</div>';
         return;
     }
 
+    const active = tasks.filter(t => !t.done);
+    const done = tasks.filter(t => t.done);
+
     let html = '';
-    tasks.forEach((task, index) => {
+    
+    active.forEach((task, i) => {
+        const realIndex = tasks.indexOf(task);
         html += `
-            <div class="note-card" onclick="deleteTask(${index})">
-                <h3>${task.done ? '✅ ' : ''}${escapeHtml(task.title)}</h3>
-                <p>${escapeHtml(task.description || '')}</p>
-                <span class="note-date">${task.created_at}</span>
+            <div class="todo-item" data-index="${realIndex}">
+                <div class="todo-checkbox"></div>
+                <span class="todo-title">${escapeHtml(task.title)}</span>
+                <button class="del-btn small" data-index="${realIndex}" data-type="task">✕</button>
             </div>
         `;
     });
+
+    done.forEach((task, i) => {
+        const realIndex = tasks.indexOf(task);
+        html += `
+            <div class="todo-item done" data-index="${realIndex}">
+                <div class="todo-checkbox checked"></div>
+                <span class="todo-title">${escapeHtml(task.title)}</span>
+                <button class="del-btn small" data-index="${realIndex}" data-type="task">✕</button>
+            </div>
+        `;
+    });
+
     content.innerHTML = html;
+
+    document.querySelectorAll('.todo-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            if (e.target.classList.contains('del-btn')) return;
+            const index = parseInt(item.dataset.index);
+            const tasks = getTasks();
+            tasks[index].done = !tasks[index].done;
+            saveTasks(tasks);
+            renderTasks();
+        });
+    });
+
+    document.querySelectorAll('.del-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = btn.dataset.index;
+            const type = btn.dataset.type;
+            if (type === 'note') deleteNote(index);
+            else deleteTask(index);
+        });
+    });
 }
 
 function escapeHtml(text) {
@@ -77,7 +128,7 @@ function showNoteForm() {
     content.innerHTML = `
         <div class="form">
             <input type="text" id="noteTitle" placeholder="Название заметки" class="input">
-            <textarea id="noteContent" placeholder="Содержимое" class="textarea" rows="4"></textarea>
+            <textarea id="noteContent" placeholder="Содержимое (необязательно)" class="textarea" rows="4"></textarea>
             <div class="form-buttons">
                 <button class="btn btn-primary" id="saveNoteBtn">Сохранить</button>
                 <button class="btn btn-secondary" id="cancelNoteBtn">Отмена</button>
@@ -100,19 +151,16 @@ function showNoteForm() {
         }
     });
 
-    document.getElementById('cancelNoteBtn').addEventListener('click', () => {
-        renderNotes();
-    });
+    document.getElementById('cancelNoteBtn').addEventListener('click', () => renderNotes());
 }
 
 function showTaskForm() {
     const content = document.getElementById('content');
     content.innerHTML = `
         <div class="form">
-            <input type="text" id="taskTitle" placeholder="Название задачи" class="input">
-            <textarea id="taskDescription" placeholder="Описание" class="textarea" rows="4"></textarea>
+            <input type="text" id="taskTitle" placeholder="Новая задача" class="input">
             <div class="form-buttons">
-                <button class="btn btn-primary" id="saveTaskBtn">Сохранить</button>
+                <button class="btn btn-primary" id="saveTaskBtn">Добавить</button>
                 <button class="btn btn-secondary" id="cancelTaskBtn">Отмена</button>
             </div>
         </div>
@@ -120,12 +168,10 @@ function showTaskForm() {
 
     document.getElementById('saveTaskBtn').addEventListener('click', () => {
         const title = document.getElementById('taskTitle').value.trim();
-        const description = document.getElementById('taskDescription').value.trim();
         if (title) {
             const tasks = getTasks();
             tasks.unshift({
                 title: title,
-                description: description,
                 done: false,
                 created_at: new Date().toLocaleString('ru-RU')
             });
@@ -134,9 +180,7 @@ function showTaskForm() {
         }
     });
 
-    document.getElementById('cancelTaskBtn').addEventListener('click', () => {
-        renderTasks();
-    });
+    document.getElementById('cancelTaskBtn').addEventListener('click', () => renderTasks());
 }
 
 function deleteNote(index) {
@@ -161,28 +205,17 @@ function deleteTask(index) {
     });
 }
 
-// Вкладки
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         currentTab = tab.dataset.tab;
-        if (currentTab === 'notes') {
-            renderNotes();
-        } else {
-            renderTasks();
-        }
+        currentTab === 'notes' ? renderNotes() : renderTasks();
     });
 });
 
-// Кнопка добавления
 document.getElementById('addBtn').addEventListener('click', () => {
-    if (currentTab === 'notes') {
-        showNoteForm();
-    } else {
-        showTaskForm();
-    }
+    currentTab === 'notes' ? showNoteForm() : showTaskForm();
 });
 
-// Первая загрузка
 renderNotes();
