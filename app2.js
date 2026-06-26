@@ -4,6 +4,16 @@ tg.expand();
 
 let currentTab = 'notes';
 
+// Тема
+const savedTheme = localStorage.getItem('tgnotion_theme') || 'dark';
+document.body.className = savedTheme;
+
+function toggleTheme() {
+    const newTheme = document.body.className === 'dark' ? 'light' : 'dark';
+    document.body.className = newTheme;
+    localStorage.setItem('tgnotion_theme', newTheme);
+}
+
 function getNotes() {
     const notes = localStorage.getItem('tgnotion_notes');
     return notes ? JSON.parse(notes) : [];
@@ -217,5 +227,15 @@ document.querySelectorAll('.tab').forEach(tab => {
 document.getElementById('addBtn').addEventListener('click', () => {
     currentTab === 'notes' ? showNoteForm() : showTaskForm();
 });
+
+// Кнопка переключения темы
+const themeBtn = document.createElement('button');
+themeBtn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+themeBtn.className = 'theme-btn';
+themeBtn.addEventListener('click', () => {
+    toggleTheme();
+    themeBtn.textContent = document.body.className === 'dark' ? '☀️' : '🌙';
+});
+document.querySelector('.tabs').appendChild(themeBtn);
 
 renderNotes();
