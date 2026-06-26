@@ -5,34 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TG Notion</title>
     <link rel="stylesheet" href="style.css">
-    <script>
-        window.addEventListener('message', (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                if (data.notes) {
-                    let html = '';
-                    data.notes.forEach(note => {
-                        html += `<div class="note-card">
-                            <h3>${note.title}</h3>
-                            <p>${note.content || ''}</p>
-                            <span class="note-date">${note.created_at}</span>
-                        </div>`;
-                    });
-                    document.getElementById('content').innerHTML = html || '<p style="color: var(--text-secondary); padding: 20px;">Нет заметок</p>';
-                }
-                if (data.ok) {
-                    tg.showAlert('Готово!');
-                    loadNotes();
-                }
-            } catch(e) {}
-        });
-    </script>
 </head>
 <body>
     <div class="app">
         <div class="tabs">
-            <button class="tab active" data-tab="notes">📝 Заметки</button>
-            <button class="tab" data-tab="tasks">✅ Задачи</button>
+            <button class="tab active" data-tab="notes">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2h7l4 4v9H3V2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 2v4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Заметки
+            </button>
+            <button class="tab" data-tab="tasks">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8l2 2 3-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Задачи
+            </button>
+            <button class="theme-btn" id="themeBtn">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" id="themeIcon"><circle cx="8" cy="8" r="6" fill="currentColor"/></svg>
+            </button>
         </div>
         <div class="content" id="content"></div>
         <button class="add-btn" id="addBtn">+</button>

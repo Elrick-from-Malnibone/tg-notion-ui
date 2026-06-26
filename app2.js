@@ -8,11 +8,23 @@ let currentTab = 'notes';
 const savedTheme = localStorage.getItem('tgnotion_theme') || 'dark';
 document.body.className = savedTheme;
 
-function toggleTheme() {
+const themeIcon = document.getElementById('themeIcon');
+function updateThemeIcon() {
+    if (document.body.className === 'dark') {
+        themeIcon.innerHTML = '<circle cx="8" cy="8" r="6" fill="currentColor"/>';
+    } else {
+        themeIcon.innerHTML = '<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" fill="none"/>';
+    }
+}
+updateThemeIcon();
+
+document.getElementById('themeBtn').addEventListener('click', () => {
     const newTheme = document.body.className === 'dark' ? 'light' : 'dark';
     document.body.className = newTheme;
     localStorage.setItem('tgnotion_theme', newTheme);
-}
+    updateThemeIcon();
+    currentTab === 'notes' ? renderNotes() : renderTasks();
+});
 
 function getNotes() {
     const notes = localStorage.getItem('tgnotion_notes');
@@ -37,7 +49,15 @@ function renderNotes() {
     const content = document.getElementById('content');
     
     if (notes.length === 0) {
-        content.innerHTML = '<div class="empty">📝<br>Нет заметок</div>';
+        content.innerHTML = `
+            <div class="empty">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <rect x="8" y="6" width="32" height="38" rx="4" stroke="currentColor" stroke-width="2"/>
+                    <line x1="16" y1="18" x2="32" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="16" y1="26" x2="28" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <br>Нет заметок
+            </div>`;
         return;
     }
 
@@ -72,7 +92,14 @@ function renderTasks() {
     const content = document.getElementById('content');
     
     if (tasks.length === 0) {
-        content.innerHTML = '<div class="empty">✅<br>Нет задач</div>';
+        content.innerHTML = `
+            <div class="empty">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <rect x="8" y="8" width="32" height="32" rx="6" stroke="currentColor" stroke-width="2"/>
+                    <path d="M17 24l5 5 9-10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <br>Нет задач
+            </div>`;
         return;
     }
 
@@ -227,15 +254,5 @@ document.querySelectorAll('.tab').forEach(tab => {
 document.getElementById('addBtn').addEventListener('click', () => {
     currentTab === 'notes' ? showNoteForm() : showTaskForm();
 });
-
-// Кнопка переключения темы
-const themeBtn = document.createElement('button');
-themeBtn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-themeBtn.className = 'theme-btn';
-themeBtn.addEventListener('click', () => {
-    toggleTheme();
-    themeBtn.textContent = document.body.className === 'dark' ? '☀️' : '🌙';
-});
-document.querySelector('.tabs').appendChild(themeBtn);
 
 renderNotes();
